@@ -40,6 +40,9 @@ void loop() {
   animateSquad();
   delay(1000);
 
+  // normalizeTo90Degrees();
+  // delay(1000);
+
 
 }
 
@@ -85,6 +88,12 @@ void animateStand(){
   
 }
 
+
+void normalizeTo90Degrees(){
+  for(uint8_t i=0; i<16; i++){
+    setServoAngle(i, 90);
+  }
+}
 
 
 void setServoAngle(uint8_t channel, float angle) {
