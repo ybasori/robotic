@@ -12,6 +12,10 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVO_MAX  512  // ~2 ms pulse (180 degrees)
 
 
+
+
+uint8_t WAIST = 7;
+
 uint8_t HIP_JOINT_LEFT = 8;
 uint8_t THIGH_LEFT = 9;
 uint8_t CALV_LEFT = 10;
@@ -23,7 +27,7 @@ uint8_t CALV_RIGHT = 14;
 uint8_t ANKLE_RIGHT = 15;
 
 
-bool oneTime = false;
+bool oneTime = true;
 
 void setup() {
   Serial.begin(115200);
@@ -36,18 +40,28 @@ void setup() {
 
 void loop() {
 
-if(oneTime){
-  oneTime = false;
-  animateStandUp();
-}
-  animateStand();
-  delay(1000);
+// if(oneTime){
+//   oneTime = false;
+//   animateStandUp();
+  // delay(1000);
+// }
+
+  // animateStand();
+  // delay(1000);
 
   // animateSquad();
   // delay(1000);
 
   // normalizeTo90Degrees();
   // delay(1000);
+
+  
+    setServoAngle(WAIST, 0);
+  delay(1000);
+    setServoAngle(WAIST, 90);
+  delay(1000);
+    setServoAngle(WAIST, 180);
+  delay(1000);
 
 
 
@@ -130,7 +144,6 @@ void animateStandUp(){
 
     setServoAngle(ANKLE_RIGHT, 0);
     setServoAngle(ANKLE_LEFT, 180);
-  delay(1000);
 }
 
 void animateSquad(){
@@ -170,6 +183,7 @@ void animateStand(){
 
 
 void normalizeTo90Degrees(){
+  Serial.println("Normalize to 90 Degrees");
   for(uint8_t i=0; i<16; i++){
     setServoAngle(i, 90);
   }
