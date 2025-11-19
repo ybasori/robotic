@@ -1,0 +1,182 @@
+const int S1 = 33;
+const int S2 = 32;
+const int S3 = 35;
+const int S4 = 34;
+const int S5 = 39;
+const int NEAR = 36;
+
+#define IN1 22
+#define IN2 23
+#define IN3 18
+#define IN4 5
+#define ENA 21
+#define ENB 19
+
+int threshold = 4095; // Adjust after checking your raw sensor values
+int speedVal = 150;   // default speed (0–255)     
+const int MIN_SPEED = 80;   // minimum working speed
+
+// Current movement state
+String currentAction = "stop";
+String lastTurn = "left";
+void setSpeed(int spd) {
+  ledcWrite(ENA, spd);
+  ledcWrite(ENB, spd);
+}
+
+void forward() {
+  Serial.println("FORWARD ");
+  currentAction = "forward";
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  setSpeed(speedVal);
+}
+
+void backward() {
+  Serial.println("BACKWARD ");
+  currentAction = "backward";
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  setSpeed(speedVal);
+}
+
+void turnRight() {
+  Serial.println("turn right ");
+  currentAction = "turn-right";
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  setSpeed(speedVal);
+}
+
+void turnLeft() {
+  Serial.println("Turne LEft ");
+  currentAction = "turn-left";
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  setSpeed(speedVal);
+}
+void right() {
+  Serial.println("RIGHT ");
+  currentAction = "right";
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  setSpeed(speedVal);
+}
+
+void left() {
+  Serial.println("LEFT ");
+  currentAction = "left";
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  setSpeed(speedVal);
+}
+
+void stopMotors() {
+  Serial.println("STOP ");
+  currentAction = "stop";
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  setSpeed(speedVal);
+}
+// --- Re-run last action after speed change ---
+void replayLastAction() {
+  if (currentAction == "forward") forward();
+  else if (currentAction == "backward") backward();
+  else if (currentAction == "left") left();
+  else if (currentAction == "right") right();
+  else stopMotors();
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(S1, INPUT_PULLUP);
+  pinMode(S2, INPUT_PULLUP);
+  pinMode(S3, INPUT_PULLUP);
+  pinMode(S4, INPUT_PULLUP);
+  pinMode(S5, INPUT_PULLUP);
+
+  
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+
+  
+  // NEW LEDC API for ESP32 Core 3.x
+  ledcAttachChannel(ENA, 1000, 8, 0);  // pin, frequency, resolution
+  ledcAttachChannel(ENB, 1000, 8, 1);
+
+  stopMotors();
+
+}
+
+void loop() {
+  // reading: 0 = black (line) on many boards; invert if yours is opposite
+  int s1 = digitalRead(S1);
+  int s2 = digitalRead(S2);
+  int s3 = digitalRead(S3);
+  int s4 = digitalRead(S4);
+  int s5 = digitalRead(S5);
+  int near = analogRead(NEAR);
+  Serial.print(s1); Serial.print(' ');
+  Serial.print(s2); Serial.print(' ');
+  Serial.print(s3); Serial.print(' ');
+  Serial.print(s4); Serial.print(' ');
+  Serial.print(s5); Serial.print(' ');
+  Serial.println(near);
+
+  if(near == threshold){
+    stopMotors();
+  }
+ // since 0 = line, check for center first
+  else if (s3 == 0) {
+    forward();
+  } else if (s2 == 0) {
+    turnRight();
+    delay(12);
+    stopMotors();
+  } else if (s1 == 0) {
+    turnRight();
+    delay(12);
+    stopMotors();
+  } else if (s4 == 0) {
+    turnLeft();
+    delay(12);
+    stopMotors();
+  } else if (s5 == 0) {
+    turnLeft();
+    delay(12);
+    stopMotors();
+  } else {
+    // if(lastTurn == "left"){
+      // turnRight();
+      // lastTurn = "right";
+    // }
+    // else{
+      turnLeft();
+      lastTurn = "left";
+    // }
+    // all 1 => lost line
+    // delay(25);
+    // stopMotors();
+    // optional: implement search routine (spin/scan) here
+  }
+
+  delay(20); // small loop delay
+  
+
+}
